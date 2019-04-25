@@ -5,4 +5,5 @@
     <string name="hint_note">Note...</string>
     <string name="button_save">Save</string>
     <string name="empty_not_saved">Note not saved because it is empty.</string>
+    <string name="clear_all_data">Delite all notes</string>
 </resources>

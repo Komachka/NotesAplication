@@ -2,6 +2,8 @@ package com.unitfactory.notesaplication.view;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -10,6 +12,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -21,6 +25,8 @@ import com.unitfactory.notesaplication.model.NoteViewModel;
 
 import java.util.List;
 
+
+//TODO https://google-developer-training.github.io/android-developer-advanced-course-practicals/unit-6-working-with-architecture-components/lesson-14-room,-livedata,-viewmodel/14-1-a-room-livedata-viewmodel/14-1-a-room-livedata-viewmodel.html#task8intro
 public class MainActivity extends AppCompatActivity {
 
     public static final int NEW_NOTE_ACTIVITY_REQUEST_CODE = 1;
@@ -43,11 +49,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        mNoteViewModel = ViewModelProviders.of(this).get(NoteViewModel.class); // memory leek?
 
         RecyclerView mRecyclerView = findViewById(R.id.recyclerview);
         final NoteListAdapter mAdapter = new NoteListAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
 
 
         mNoteViewModel.getAllNotes().observe(this, new Observer<List<Note>>() {
@@ -56,6 +64,37 @@ public class MainActivity extends AppCompatActivity {
                 mAdapter.setNotes(notes);
             }
         });
+
+
+
+        // Add the functionality to swipe items in the
+        // recycler view to delete that item
+        ItemTouchHelper helper = new ItemTouchHelper(
+                new ItemTouchHelper.SimpleCallback(0,
+                        ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+                    @Override
+                    public boolean onMove(RecyclerView recyclerView,
+                                          RecyclerView.ViewHolder viewHolder,
+                                          RecyclerView.ViewHolder target) {
+                        return false;
+                    }
+
+                    @Override
+                    public void onSwiped(RecyclerView.ViewHolder viewHolder,
+                                         int direction) {
+                        int position = viewHolder.getAdapterPosition();
+                        Note myNote = mAdapter.getNoteOnPosition(position);
+                        Toast.makeText(MainActivity.this, "Deleting " +
+                                myNote.getNote(), Toast.LENGTH_LONG).show();
+
+                        // Delete the word
+                        mNoteViewModel.deleteNote(myNote);
+                    }
+                });
+
+        helper.attachToRecyclerView(mRecyclerView);
+
+
     }
 
     @Override
@@ -76,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    /*   @Override
+      @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -85,16 +124,18 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.clear_data) {
+            // Add a toast just for confirmation
+            Toast.makeText(this, "Clearing the data...",
+                    Toast.LENGTH_SHORT).show();
+
+            // Delete the existing data
+            mNoteViewModel.deleteAll();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
-    }*/
+    }
 }

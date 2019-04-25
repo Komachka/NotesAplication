@@ -42,40 +42,9 @@ public abstract class NoteRoomDataBase extends RoomDatabase {
         @Override
         public void onOpen(@NonNull SupportSQLiteDatabase db) {
             super.onOpen(db);
-            new PopulateDbAsync(instance).execute();
+            System.out.println("Do smth in background");
         }
     };
-
-
-
-    private static class PopulateDbAsync extends AsyncTask<Void, Void, Void>
-    {
-        private final NoteDao noteDao;
-        String [] notes = {"dolphin", "crocodile", "cobra"};
-
-
-        PopulateDbAsync(NoteRoomDataBase db) {
-            this.noteDao = db.noteDao();
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            // Start the app with a clean database every time.
-            // Not needed if you only populate the database
-            // when it is first created
-            noteDao.deleteAll();
-
-            for (int i = 0; i <= notes.length - 1; i++) {
-                Note word = new Note(notes[i]);
-                noteDao.insert(word);
-            }
-            return null;
-        }
-    }
-
-
-
-
 
 }
 
