@@ -50,5 +50,24 @@ public class Note {
         return Id;
     }
 
+    public void setId(int id) {
+        Id = id;
+    }
 
+    public void setmNote(@NonNull String mNote) {
+        this.mNote = mNote;
+    }
+
+    public void setCreatingDate(Date creatingDate) {
+        this.creatingDate = creatingDate;
+    }
+
+    @NonNull
+    public String getmNote() {
+        return mNote;
+    }
+
+    public Date getCreatingDate() {
+        return creatingDate;
+    }
 }
