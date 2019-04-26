@@ -20,8 +20,6 @@
 
 
     <style name="text_view_style">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
         <item name="android:textAppearance">
             @android:style/TextAppearance.Large</item>
         <item name="android:background">@color/colorPrimaryLight</item>
@@ -30,6 +28,16 @@
         <item name="android:padding">16dp</item>
         <item name="android:textColor">@color/colorTextPrimary</item>
     </style>
+
+    <style name="text_view_data_style">
+        <item name="android:textAppearance">
+            @android:style/TextAppearance.Large</item>
+        <item name="android:background">@color/colorPrimaryLight</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:textColor">@color/colorTextPrimary</item>
+    </style>
+
+
 
 
 

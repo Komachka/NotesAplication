@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.unitfactory.notesaplication.Constants;
 import com.unitfactory.notesaplication.R;
 import com.unitfactory.notesaplication.data.Note;
 import com.unitfactory.notesaplication.model.NoteViewModel;
@@ -29,7 +30,7 @@ import java.util.List;
 //TODO https://google-developer-training.github.io/android-developer-advanced-course-practicals/unit-6-working-with-architecture-components/lesson-14-room,-livedata,-viewmodel/14-1-a-room-livedata-viewmodel/14-1-a-room-livedata-viewmodel.html#task8intro
 public class MainActivity extends AppCompatActivity {
 
-    public static final int NEW_NOTE_ACTIVITY_REQUEST_CODE = 1;
+
 
     private NoteViewModel mNoteViewModel;
 
@@ -45,11 +46,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, NoteDetailsActivity.class);
-                startActivityForResult(intent, NEW_NOTE_ACTIVITY_REQUEST_CODE);
+                startActivityForResult(intent, Constants.NEW_NOTE_ACTIVITY_REQUEST_CODE);
             }
         });
 
-        mNoteViewModel = ViewModelProviders.of(this).get(NoteViewModel.class); // memory leek?
+        mNoteViewModel = ViewModelProviders.of(this).get(NoteViewModel.class);
 
         RecyclerView mRecyclerView = findViewById(R.id.recyclerview);
         final NoteListAdapter mAdapter = new NoteListAdapter(this);
@@ -101,10 +102,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == NEW_NOTE_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK)
+        if (requestCode == Constants.NEW_NOTE_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK)
         {
-            mNoteViewModel.insert(new Note(data.getStringExtra(NoteDetailsActivity.EXTRA_REPLY)));
+            Toast.makeText(
+                    getApplicationContext(),
+                    data.getStringExtra(Constants.EXTRA_REPLY_NOTE) + " saved",
+                    Toast.LENGTH_LONG).show();
+
         }
+
         else {
             Toast.makeText(
                     getApplicationContext(),
@@ -136,6 +142,18 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
 
+        /*if (id==R.id.reverse)
+        {
+            mNoteViewModel.notesReverse();
+        }*/
+
         return super.onOptionsItemSelected(item);
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mNoteViewModel.shutDown();
     }
 }

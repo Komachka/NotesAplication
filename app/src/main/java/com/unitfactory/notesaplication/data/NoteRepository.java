@@ -4,87 +4,99 @@ import android.app.Application;
 import android.os.AsyncTask;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class NoteRepository {
     private NoteDao mNoteDao;
     private LiveData<List<Note>> mAllNotes;
+    private ExecutorService executorService;
 
     public NoteRepository(Application application) {
+        executorService = Executors.newSingleThreadExecutor();
         NoteRoomDataBase mDb = NoteRoomDataBase.getDatabaseInstance(application);
-        mNoteDao = mDb.noteDao(); // TODO how can I call abstract method?????
+        mNoteDao = mDb.noteDao();
         mAllNotes = mNoteDao.getAllNotes();
 
     }
+
+
+    public LiveData<Note> getNoteById(final int id)
+    {
+        Future<LiveData<Note>> future = executorService.submit(new Callable<LiveData<Note>>() {
+            @Override
+            public LiveData<Note> call() throws Exception {
+                return mNoteDao.getById(id);
+            }
+        });
+        try {
+            return future.get();
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+
 
     public LiveData<List<Note>> getAllNotes() {
         return mAllNotes;
     }
 
 
-    public void insert(Note note)
-    {
-        new InsertAsyncTask(mNoteDao).execute(note);
-    }
-
-
-
-    private static class InsertAsyncTask extends AsyncTask<Note, Void, Void>
+    public void insert(final Note note)
     {
 
-        private NoteDao mAsyncTaskDao;
-
-        public InsertAsyncTask(NoteDao mAsyncTaskDao) {
-            this.mAsyncTaskDao = mAsyncTaskDao;
-        }
-
-        @Override
-        protected Void doInBackground(Note... notes) {
-            mAsyncTaskDao.insert(notes[0]);
-            return null;
-        }
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                mNoteDao.insert(note);
+            }
+        });
     }
 
 
     public void deleteAll()  {
-        new deleteAllWordsAsyncTask(mNoteDao).execute();
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                mNoteDao.deleteAll();
+            }
+        });
     }
 
-    private static class deleteAllWordsAsyncTask extends AsyncTask<Void, Void, Void> {
-        private NoteDao mAsyncTaskDao;
 
-        deleteAllWordsAsyncTask(NoteDao dao) {
-            mAsyncTaskDao = dao;
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            mAsyncTaskDao.deleteAll();
-            return null;
-        }
-    }
-
-    public void deleteNote(Note note)
+    public void deleteNote(final Note note)
     {
-        new deleteNoteAsyncTask(mNoteDao).execute(note);
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                mNoteDao.deleteNote(note);
+            }
+        });
     }
 
-    private static class deleteNoteAsyncTask extends AsyncTask<Note, Void, Void>
+    public void shutDown()
     {
-        private NoteDao mAsyncTaskDao;
-
-        public deleteNoteAsyncTask(NoteDao mAsyncTaskDao) {
-            this.mAsyncTaskDao = mAsyncTaskDao;
-        }
-
-        @Override
-        protected Void doInBackground(Note... notes) {
-            mAsyncTaskDao.deleteNote(notes[0]);
-            return null;
-        }
+        executorService.shutdown();
     }
 
 
-
+    public void updateNote(final Note note) {
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                mNoteDao.update(note);
+            }
+        });
+    }
 }

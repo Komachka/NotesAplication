@@ -23,7 +23,7 @@ public class Note {
 
 
     @TypeConverters(DateConverter.class)
-    @ColumnInfo(name = "creating_date")
+    @ColumnInfo(name = "date")
     private Date creatingDate;
 
 

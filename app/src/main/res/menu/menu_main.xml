@@ -7,4 +7,8 @@
         android:orderInCategory="100"
         android:title="@string/clear_all_data"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/reverse"
+        android:title="Reverse"></item>
 </menu>

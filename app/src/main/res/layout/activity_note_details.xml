@@ -6,13 +6,11 @@
     android:orientation="vertical"
     android:padding="24dp">
 
-    <EditText
-        android:id="@+id/edit_word"
-        style="@style/text_view_style"
-        android:hint="@string/hint_note"
-        android:inputType="textAutoComplete" />
-
-    <Button
+   <EditText
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:id="@+id/edit_word" />
+   <Button
         android:id="@+id/button_save"
         style="@style/button_style"
         android:text="@string/button_save" />
