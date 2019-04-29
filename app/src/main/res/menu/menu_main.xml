@@ -9,6 +9,10 @@
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/reverse"
-        android:title="Reverse"></item>
+        android:id="@+id/ascending"
+        android:title="ascending"></item>
+
+    <item
+        android:id="@+id/descending"
+        android:title="descending"></item>
 </menu>

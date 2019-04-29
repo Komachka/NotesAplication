@@ -142,10 +142,17 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
 
-        /*if (id==R.id.reverse)
+        if (id==R.id.ascending)
         {
-            mNoteViewModel.notesReverse();
-        }*/
+            mNoteViewModel.rearrange(Constants.ASCENDING);
+            return true;
+        }
+
+        if (id==R.id.descending)
+        {
+            mNoteViewModel.rearrange(Constants.DESCENDING);
+            return true;
+        }
 
         return super.onOptionsItemSelected(item);
     }

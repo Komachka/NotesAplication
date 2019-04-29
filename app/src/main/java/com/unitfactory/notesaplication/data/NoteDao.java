@@ -19,8 +19,8 @@ public interface NoteDao {
     @Query("DELETE FROM note_table")
     void deleteAll();
 
-    @Query("SELECT * from note_table ORDER BY date ASC")
-    LiveData<List<Note>> getAllNotes();
+/*    @Query("SELECT * from note_table ORDER BY date ASC")
+    LiveData<List<Note>> getAllNotes();*/
 
     @Query("SELECT * from note_table WHERE id = :id")
     LiveData<Note> getById(int id);
@@ -31,5 +31,9 @@ public interface NoteDao {
     @Update
     void update(Note note);
 
+    @Query("SELECT * from note_table ORDER BY date ASC")
+    LiveData<List<Note>> allNotesAscending();
 
+    @Query("SELECT * from note_table ORDER BY date DESC")
+    LiveData<List<Note>> allNotesDescending();
 }

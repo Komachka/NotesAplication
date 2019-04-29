@@ -6,4 +6,7 @@ public interface Constants {
     String NOTE_EXTRAS_KEY = "note";
 
     String EXTRA_REPLY_NOTE = "REPLY";
+
+    int ASCENDING = 0;
+    int DESCENDING = 1;
 }

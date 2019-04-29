@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.arch.core.util.Function;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 
@@ -18,7 +19,7 @@ import java.util.List;
 public class NoteViewModel extends AndroidViewModel {
 
     private NoteRepository mRepository;
-    private LiveData<List<Note>> mAllNotes;// = new MutableLiveData<>();
+    private MediatorLiveData<List<Note>> mAllNotes;
 
     public NoteViewModel(@NonNull Application application) {
         super(application);
@@ -31,14 +32,10 @@ public class NoteViewModel extends AndroidViewModel {
         return mRepository.getNoteById(id);
     }
 
+    public void  rearrange(int order){
+        mRepository.rearrange(order);
+    }
 
-
-  /*  public void notesReverse()
-    {
-        List<Note> notes = mAllNotes.getValue();
-        Collections.reverse(notes);
-        //mAllNotes.postValue(notes);
-    }*/
 
     public LiveData<String> getNoteTextById(int id)
     {

@@ -4,7 +4,9 @@ import android.app.Application;
 import android.os.AsyncTask;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -15,18 +17,67 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import static com.unitfactory.notesaplication.Constants.ASCENDING;
+import static com.unitfactory.notesaplication.Constants.DESCENDING;
+
 public class NoteRepository {
     private NoteDao mNoteDao;
-    private LiveData<List<Note>> mAllNotes;
+    //private LiveData<List<Note>> mAllNotes;
+
+    private MediatorLiveData<List<Note>> allNotes = new MediatorLiveData<List<Note>>();
+
+    private LiveData<List<Note>> notesAscending;
+    private LiveData<List<Note>> notesDescending;
+
+    private int currentOrder = ASCENDING;
     private ExecutorService executorService;
 
     public NoteRepository(Application application) {
         executorService = Executors.newSingleThreadExecutor();
         NoteRoomDataBase mDb = NoteRoomDataBase.getDatabaseInstance(application);
         mNoteDao = mDb.noteDao();
-        mAllNotes = mNoteDao.getAllNotes();
+        notesAscending = mNoteDao.allNotesAscending();
+        notesDescending = mNoteDao.allNotesDescending();
 
+        allNotes.addSource(notesAscending, new Observer<List<Note>>() {
+            @Override
+            public void onChanged(List<Note> notes) {
+                if (currentOrder == ASCENDING) {
+                    if (notes != null)
+                        allNotes.setValue(notes);
+                }
+            }
+        });
+
+        allNotes.addSource(notesDescending, new Observer<List<Note>>() {
+            @Override
+            public void onChanged(List<Note> notes) {
+                if (currentOrder == DESCENDING) {
+                    if (notes != null)
+                        allNotes.setValue(notes);
+                }
+            }
+        });
+        rearrange(ASCENDING);
     }
+
+
+    public void  rearrange(int order)
+    {
+        if (order == ASCENDING)
+        {
+            allNotes.setValue(notesAscending.getValue());
+        }
+        else if (order == DESCENDING)
+        {
+            allNotes.setValue(notesDescending.getValue());
+        }
+        currentOrder = order;
+    }
+
+
+
+
 
 
     public LiveData<Note> getNoteById(final int id)
@@ -48,8 +99,8 @@ public class NoteRepository {
 
 
 
-    public LiveData<List<Note>> getAllNotes() {
-        return mAllNotes;
+    public MediatorLiveData<List<Note>> getAllNotes() {
+        return allNotes;
     }
 
 
