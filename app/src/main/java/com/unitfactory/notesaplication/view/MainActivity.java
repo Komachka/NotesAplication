@@ -1,16 +1,21 @@
 package com.unitfactory.notesaplication.view;
 
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -30,9 +35,10 @@ import java.util.List;
 //TODO https://google-developer-training.github.io/android-developer-advanced-course-practicals/unit-6-working-with-architecture-components/lesson-14-room,-livedata,-viewmodel/14-1-a-room-livedata-viewmodel/14-1-a-room-livedata-viewmodel.html#task8intro
 public class MainActivity extends AppCompatActivity {
 
-
+    final static String TAG = MainActivity.class.getSimpleName();
 
     private NoteViewModel mNoteViewModel;
+    NoteListAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,20 +58,17 @@ public class MainActivity extends AppCompatActivity {
 
         mNoteViewModel = ViewModelProviders.of(this).get(NoteViewModel.class);
 
+        Log.d(TAG, "on create before call");
+        handleSearch("");
         RecyclerView mRecyclerView = findViewById(R.id.recyclerview);
-        final NoteListAdapter mAdapter = new NoteListAdapter(this);
+        mAdapter = new NoteListAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
 
 
-        mNoteViewModel.getAllNotes().observe(this, new Observer<List<Note>>() {
-            @Override
-            public void onChanged(List<Note> notes) {
-                mAdapter.setNotes(notes);
-            }
-        });
 
+        //mNoteViewModel.invalidate();
 
 
         // Add the functionality to swipe items in the
@@ -125,6 +128,31 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        // Associate searchable configuration with the SearchView
+        SearchManager searchManager =
+                 (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView =
+                (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setSearchableInfo(
+                searchManager.getSearchableInfo(getComponentName()));
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Log.d(TAG, "onQueryTextSubmit "+query);
+                handleSearch(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                Log.d(TAG, "onQueryTextChange "+newText);
+                if (TextUtils.isEmpty(newText))
+                    handleSearch("");
+
+                return false;
+            }
+        });
         return true;
     }
 
@@ -162,5 +190,23 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         mNoteViewModel.shutDown();
+    }
+
+    private void handleSearch(String query) {
+        String pattern =  "_";
+        if (!TextUtils.isEmpty(query))
+            pattern = query;
+        LiveData<List<Note>> tmp = mNoteViewModel.getAllNotes(pattern);
+        if (tmp!=null) {
+            tmp.observe(this, new Observer<List<Note>>() {
+                @Override
+                public void onChanged(List<Note> notes) {
+                    mAdapter.setNotes(notes);
+                }
+            });
+        }
+        else {
+            Toast.makeText(this, "tmp == null", Toast.LENGTH_LONG).show();
+        }
     }
 }

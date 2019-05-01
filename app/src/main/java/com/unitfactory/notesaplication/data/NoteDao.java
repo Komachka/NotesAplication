@@ -20,7 +20,7 @@ public interface NoteDao {
     void deleteAll();
 
 /*    @Query("SELECT * from note_table ORDER BY date ASC")
-    LiveData<List<Note>> getAllNotes();*/
+    LiveData<List<Note>> getNotesAscending();*/
 
     @Query("SELECT * from note_table WHERE id = :id")
     LiveData<Note> getById(int id);
@@ -36,4 +36,11 @@ public interface NoteDao {
 
     @Query("SELECT * from note_table ORDER BY date DESC")
     LiveData<List<Note>> allNotesDescending();
+
+    @Query("SELECT * from note_table WHERE note LIKE :pattern ORDER BY date ASC")
+    LiveData<List<Note>> setQueryFilterAsc(String pattern);
+
+    @Query("SELECT * from note_table WHERE note LIKE :pattern ORDER BY date DESC")
+    LiveData<List<Note>> setQueryFilterDesc(String pattern);
+
 }
