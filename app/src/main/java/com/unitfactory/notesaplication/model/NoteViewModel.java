@@ -10,11 +10,15 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.Transformations;
+import androidx.paging.DataSource;
+import androidx.paging.LivePagedListBuilder;
+import androidx.paging.PagedList;
 
 import com.unitfactory.notesaplication.data.Note;
+import com.unitfactory.notesaplication.data.NoteDataSource;
+import com.unitfactory.notesaplication.data.NoteDataSourceFactory;
 import com.unitfactory.notesaplication.data.NoteRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.unitfactory.notesaplication.Constants.ASCENDING;
@@ -23,17 +27,58 @@ import static com.unitfactory.notesaplication.Constants.DESCENDING;
 public class NoteViewModel extends AndroidViewModel {
 
     private NoteRepository mRepository;
-    private MediatorLiveData<List<Note>> allNotes = new MediatorLiveData<>();
+    /*private MediatorLiveData<List<Note>> allNotes = new MediatorLiveData<>();
     private LiveData<List<Note>> asc;
-    private LiveData<List<Note>> desc;
+    private LiveData<List<Note>> desc;*/
+
+
+    private LiveData<PagedList<Note>> concertList;
+    private DataSource<Integer,Note> mostRecentDataSource;
+    private String filter = "_";
+
+
 
     private int currentOrder = ASCENDING;
     public NoteViewModel(@NonNull Application application) {
         super(application);
         mRepository = new NoteRepository(application);
-
+       init();
     }
 
+    public void invalidateDataSource() {
+        if (mostRecentDataSource != null)
+            mostRecentDataSource.invalidate();
+    }
+
+    private void init()
+    {
+        NoteDataSourceFactory dataSourceFactory = mRepository.getNoteDataSourceFactory(filter, currentOrder);
+        mostRecentDataSource = dataSourceFactory.create();
+
+        /*PagedList.Config myPagingConfig = new PagedList.Config.Builder()
+                .setPageSize(1)
+                .setInitialLoadSizeHint(5)
+                .setEnablePlaceholders(true)
+                .setPrefetchDistance(1)
+                .build();
+        concertList = new LivePagedListBuilder<>(dataSourceFactory, myPagingConfig)
+                .build();*/
+
+
+
+
+        PagedList.Config config = (new PagedList.Config.Builder()).setEnablePlaceholders(true)
+                .setInitialLoadSizeHint(1)
+                .setPageSize(1).build();
+
+        //create LiveData object using LivePagedListBuilder which takes
+        //data source factory and page config as params
+        concertList = new LivePagedListBuilder<>(dataSourceFactory, config).build();
+
+
+
+
+    }
 
     public LiveData<Note> getNoteById(int id)
     {
@@ -52,50 +97,23 @@ public class NoteViewModel extends AndroidViewModel {
     }
 
 
+    public void setFilter(String filter) {
+        invalidateDataSource();
+        this.filter = filter;
+        init();
+    }
 
-    public MutableLiveData<List<Note>> getAllNotes(String pattern)
+    public LiveData<PagedList<Note>> getAllNotes()
     {
-            asc = mRepository.getNotesAscending(pattern);
-            desc = mRepository.getNotesDescending(pattern);
-            allNotes.addSource(asc, new Observer<List<Note>>() {
-                @Override
-                public void onChanged(List<Note> notes) {
-                    if (currentOrder == ASCENDING) {
-                        if (notes != null)
-                            allNotes.setValue(notes);
-                    }
-                }
-            });
-            allNotes.addSource(desc, new Observer<List<Note>>() {
-                @Override
-                public void onChanged(List<Note> notes) {
-                    if (currentOrder == DESCENDING) {
-                        if (notes != null)
-                            allNotes.setValue(notes);
-                    }
-                }
-            });
-            rearrange(ASCENDING);
-
-
-        return allNotes;
+        return concertList;
     }
 
     public void  rearrange(int order)
     {
-        if (order == ASCENDING)
-        {
-            allNotes.setValue(asc.getValue());
-        }
-        else if (order == DESCENDING)
-        {
-
-            allNotes.setValue(desc.getValue());
-        }
+        invalidateDataSource();
         currentOrder = order;
+        init();
     }
-
-
 
 
     public void insert(Note note) {mRepository.insert(note);}
@@ -109,4 +127,5 @@ public class NoteViewModel extends AndroidViewModel {
     public void updateNote(Note note) {
         mRepository.updateNote(note);
     }
+
 }

@@ -70,4 +70,14 @@ public class Note {
     public Date getCreatingDate() {
         return creatingDate;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
+        Note note = (Note) obj;
+        return note.getId() == this.getId() &&
+                note.getNote() == note.getNote() &&
+                note.getCreatingDate() == note.getCreatingDate();
+    }
 }

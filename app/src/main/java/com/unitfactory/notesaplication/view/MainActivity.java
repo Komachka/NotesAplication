@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
@@ -18,6 +19,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.paging.PagedList;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -38,7 +40,15 @@ public class MainActivity extends AppCompatActivity {
     final static String TAG = MainActivity.class.getSimpleName();
 
     private NoteViewModel mNoteViewModel;
-    NoteListAdapter mAdapter;
+    NoteListAdapterPaged mAdapter;
+
+    Observer<PagedList<Note>> observer = new Observer<PagedList<Note>>() {
+        @Override
+        public void onChanged(PagedList<Note> notes) {
+            Log.d(TAG,"submit list");
+            mAdapter.submitList(notes);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,18 +67,27 @@ public class MainActivity extends AppCompatActivity {
         });
 
         mNoteViewModel = ViewModelProviders.of(this).get(NoteViewModel.class);
-
-        Log.d(TAG, "on create before call");
-        handleSearch("");
         RecyclerView mRecyclerView = findViewById(R.id.recyclerview);
-        mAdapter = new NoteListAdapter(this);
+        mAdapter = new NoteListAdapterPaged();
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                Toast.makeText(MainActivity.this, "onScrollStateChanged", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                Toast.makeText(MainActivity.this, "onScrolled", Toast.LENGTH_LONG).show();
+
+            }
+        });
 
 
-
-        //mNoteViewModel.invalidate();
 
 
         // Add the functionality to swipe items in the
@@ -90,13 +109,13 @@ public class MainActivity extends AppCompatActivity {
                         Note myNote = mAdapter.getNoteOnPosition(position);
                         Toast.makeText(MainActivity.this, "Deleting " +
                                 myNote.getNote(), Toast.LENGTH_LONG).show();
-
-                        // Delete the word
                         mNoteViewModel.deleteNote(myNote);
                     }
                 });
 
         helper.attachToRecyclerView(mRecyclerView);
+
+        mNoteViewModel.getAllNotes().observe(this, observer);
 
 
     }
@@ -164,8 +183,6 @@ public class MainActivity extends AppCompatActivity {
             // Add a toast just for confirmation
             Toast.makeText(this, "Clearing the data...",
                     Toast.LENGTH_SHORT).show();
-
-            // Delete the existing data
             mNoteViewModel.deleteAll();
             return true;
         }
@@ -173,12 +190,14 @@ public class MainActivity extends AppCompatActivity {
         if (id==R.id.ascending)
         {
             mNoteViewModel.rearrange(Constants.ASCENDING);
+            mNoteViewModel.getAllNotes().observe(this,observer);
             return true;
         }
 
         if (id==R.id.descending)
         {
             mNoteViewModel.rearrange(Constants.DESCENDING);
+            mNoteViewModel.getAllNotes().observe(this,observer);
             return true;
         }
 
@@ -196,17 +215,8 @@ public class MainActivity extends AppCompatActivity {
         String pattern =  "_";
         if (!TextUtils.isEmpty(query))
             pattern = query;
-        LiveData<List<Note>> tmp = mNoteViewModel.getAllNotes(pattern);
-        if (tmp!=null) {
-            tmp.observe(this, new Observer<List<Note>>() {
-                @Override
-                public void onChanged(List<Note> notes) {
-                    mAdapter.setNotes(notes);
-                }
-            });
-        }
-        else {
-            Toast.makeText(this, "tmp == null", Toast.LENGTH_LONG).show();
-        }
+        mNoteViewModel.setFilter(pattern);
+        mNoteViewModel.getAllNotes().observe(this, observer);
     }
+
 }

@@ -44,7 +44,6 @@ public class NoteRepository {
 
     public LiveData<List<Note>> getNotesAscending(String pattern) {
         return mNoteDao.setQueryFilterAsc("%"+pattern + "%");
-        //return mNoteDao.allNotesAscending();
     }
 
     public LiveData<List<Note>> getNotesDescending(String pattern) {
@@ -96,6 +95,14 @@ public class NoteRepository {
                 mNoteDao.update(note);
             }
         });
+    }
+
+    public NoteDataSourceFactory getNoteDataSourceFactory(String filter, int order) {
+        return new NoteDataSourceFactory(mNoteDao, filter, order);
+    }
+
+    public NoteDao getDAO() {
+        return mNoteDao;
     }
 
 }

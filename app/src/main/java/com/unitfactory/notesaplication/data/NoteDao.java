@@ -2,11 +2,14 @@ package com.unitfactory.notesaplication.data;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.paging.DataSource;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.RawQuery;
 import androidx.room.Update;
+import androidx.sqlite.db.SupportSQLiteQuery;
 
 import java.util.List;
 
@@ -40,7 +43,12 @@ public interface NoteDao {
     @Query("SELECT * from note_table WHERE note LIKE :pattern ORDER BY date ASC")
     LiveData<List<Note>> setQueryFilterAsc(String pattern);
 
+
     @Query("SELECT * from note_table WHERE note LIKE :pattern ORDER BY date DESC")
     LiveData<List<Note>> setQueryFilterDesc(String pattern);
+
+    @RawQuery(observedEntities = Note.class)
+    List<Note> allNotesWithFilterWithOrderAndPaging(SupportSQLiteQuery query);
+
 
 }
