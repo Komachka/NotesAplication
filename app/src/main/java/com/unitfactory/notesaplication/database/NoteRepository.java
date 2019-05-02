@@ -1,14 +1,13 @@
-package com.unitfactory.notesaplication.data;
+package com.unitfactory.notesaplication.database;
 
 import android.app.Application;
-import android.os.AsyncTask;
 
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MediatorLiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
+import androidx.paging.LivePagedListBuilder;
+import androidx.paging.PagedList;
 
-import java.util.List;
+import com.unitfactory.notesaplication.model.Note;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -26,8 +25,7 @@ public class NoteRepository {
         mNoteDao = mDb.noteDao();
     }
 
-    public LiveData<Note> getNoteById(final int id)
-    {
+    public LiveData<Note> getNoteById(final int id) {
         Future<LiveData<Note>> future = executorService.submit(new Callable<LiveData<Note>>() {
             @Override
             public LiveData<Note> call() throws Exception {
@@ -42,17 +40,7 @@ public class NoteRepository {
         return null;
     }
 
-    public LiveData<List<Note>> getNotesAscending(String pattern) {
-        return mNoteDao.setQueryFilterAsc("%"+pattern + "%");
-    }
-
-    public LiveData<List<Note>> getNotesDescending(String pattern) {
-        return mNoteDao.setQueryFilterDesc("%"+pattern+"%");
-    }
-
-    public void insert(final Note note)
-    {
-
+    public void insert(final Note note) {
         executorService.submit(new Runnable() {
             @Override
             public void run() {
@@ -62,7 +50,7 @@ public class NoteRepository {
     }
 
 
-    public void deleteAll()  {
+    public void deleteAll() {
         executorService.submit(new Runnable() {
             @Override
             public void run() {
@@ -72,8 +60,7 @@ public class NoteRepository {
     }
 
 
-    public void deleteNote(final Note note)
-    {
+    public void deleteNote(final Note note) {
         executorService.submit(new Runnable() {
             @Override
             public void run() {
@@ -82,8 +69,7 @@ public class NoteRepository {
         });
     }
 
-    public void shutDown()
-    {
+    public void shutDown() {
         executorService.shutdown();
     }
 
@@ -101,8 +87,9 @@ public class NoteRepository {
         return new NoteDataSourceFactory(mNoteDao, filter, order);
     }
 
-    public NoteDao getDAO() {
-        return mNoteDao;
-    }
 
+    public LiveData<PagedList<Note>> createPageList(NoteDataSourceFactory dataSourceFactory, PagedList.Config config) {
+        return new LivePagedListBuilder<>(dataSourceFactory, config)
+                .build();
+    }
 }

@@ -1,10 +1,13 @@
-package com.unitfactory.notesaplication.data;
+package com.unitfactory.notesaplication.model;
+
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
+
+import com.unitfactory.notesaplication.database.DateConverter;
 
 import java.util.Date;
 
@@ -21,26 +24,23 @@ public class Note {
     @ColumnInfo(name = "note")
     private String mNote;
 
-
     @TypeConverters(DateConverter.class)
     @ColumnInfo(name = "date")
     private Date creatingDate;
-
 
     public Note(@NonNull String note) {
         this.mNote = note;
         this.creatingDate = new Date();
     }
 
-    @Ignore //is annotated using @Ignore, because Room expects only one constructor by default in an entity class.
-    public Note(int id, @NonNull String note)
-    {
+    @Ignore
+    //is annotated using @Ignore, because Room expects only one constructor by default in an entity class.
+    public Note(int id, @NonNull String note) {
         this.Id = id;
         this.mNote = note;
         this.creatingDate = new Date();
 
     }
-
 
     public String getNote() {
         return mNote;
@@ -54,17 +54,12 @@ public class Note {
         Id = id;
     }
 
-    public void setmNote(@NonNull String mNote) {
+    public void setNote(@NonNull String mNote) {
         this.mNote = mNote;
     }
 
     public void setCreatingDate(Date creatingDate) {
         this.creatingDate = creatingDate;
-    }
-
-    @NonNull
-    public String getmNote() {
-        return mNote;
     }
 
     public Date getCreatingDate() {
@@ -77,7 +72,7 @@ public class Note {
             return true;
         Note note = (Note) obj;
         return note.getId() == this.getId() &&
-                note.getNote() == note.getNote() &&
+                note.getNote().equals(note.getNote()) &&
                 note.getCreatingDate() == note.getCreatingDate();
     }
 }

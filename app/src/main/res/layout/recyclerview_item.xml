@@ -9,8 +9,9 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="0dp"
-        android:layout_weight="4"
+        android:layout_weight="1"
         android:layout_height="match_parent"
+        android:background="@color/colorScreenBackground"
         style="@style/text_view_style">
 
         <TextView
@@ -26,30 +27,21 @@
             android:ellipsize="end"
             android:maxLength="100"
             style="@style/text_view_style"
+            android:textSize="18sp"
 
             />
     </LinearLayout>
 
     <LinearLayout
         android:orientation="vertical"
-        android:layout_width="0dp"
-        android:layout_weight="1"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
         style="@style/text_view_style">
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/textViewTime"
-            />
-        <TextView
-            android:id="@+id/textView2"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:text=">"
-            style="@style/text_view_style"
-            android:layout_gravity="center"
-            android:textAlignment="center"
+            android:id="@+id/textViewTime"
             />
     </LinearLayout>
 

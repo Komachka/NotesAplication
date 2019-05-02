@@ -10,11 +10,11 @@
 
     <item
         android:id="@+id/ascending"
-        android:title="ascending"></item>
+        android:title="@string/action_asc"></item>
 
     <item
         android:id="@+id/descending"
-        android:title="descending"></item>
+        android:title="@string/action_desc"></item>
 
     <item android:id="@+id/search"
         android:title="@string/search_title"

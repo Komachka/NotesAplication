@@ -5,18 +5,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.paging.PagedList;
@@ -25,27 +22,22 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.unitfactory.notesaplication.Constants;
+import com.unitfactory.notesaplication.utils.Constants;
 import com.unitfactory.notesaplication.R;
-import com.unitfactory.notesaplication.data.Note;
-import com.unitfactory.notesaplication.model.NoteViewModel;
+import com.unitfactory.notesaplication.model.Note;
+import com.unitfactory.notesaplication.vm.NoteViewModel;
 
+import static com.unitfactory.notesaplication.utils.Constants.FULL_QUERY_TEXT;
 
-import java.util.List;
-
-
-//TODO https://google-developer-training.github.io/android-developer-advanced-course-practicals/unit-6-working-with-architecture-components/lesson-14-room,-livedata,-viewmodel/14-1-a-room-livedata-viewmodel/14-1-a-room-livedata-viewmodel.html#task8intro
 public class MainActivity extends AppCompatActivity {
 
     final static String TAG = MainActivity.class.getSimpleName();
-
     private NoteViewModel mNoteViewModel;
-    NoteListAdapterPaged mAdapter;
+    private NoteListAdapterPaged mAdapter;
 
-    Observer<PagedList<Note>> observer = new Observer<PagedList<Note>>() {
+    private Observer<PagedList<Note>> observer = new Observer<PagedList<Note>>() {
         @Override
         public void onChanged(PagedList<Note> notes) {
-            Log.d(TAG,"submit list");
             mAdapter.submitList(notes);
         }
     };
@@ -65,75 +57,45 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(intent, Constants.NEW_NOTE_ACTIVITY_REQUEST_CODE);
             }
         });
-
-        mNoteViewModel = ViewModelProviders.of(this).get(NoteViewModel.class);
-        RecyclerView mRecyclerView = findViewById(R.id.recyclerview);
+        final RecyclerView mRecyclerView = findViewById(R.id.recyclerview);
         mAdapter = new NoteListAdapterPaged();
         mRecyclerView.setAdapter(mAdapter);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
 
-        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-                Toast.makeText(MainActivity.this, "onScrollStateChanged", Toast.LENGTH_LONG).show();
-            }
-
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                Toast.makeText(MainActivity.this, "onScrolled", Toast.LENGTH_LONG).show();
-
-            }
-        });
-
-
-
-
-        // Add the functionality to swipe items in the
-        // recycler view to delete that item
-        ItemTouchHelper helper = new ItemTouchHelper(
-                new ItemTouchHelper.SimpleCallback(0,
-                        ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
-                    @Override
-                    public boolean onMove(RecyclerView recyclerView,
-                                          RecyclerView.ViewHolder viewHolder,
-                                          RecyclerView.ViewHolder target) {
-                        return false;
-                    }
-
-                    @Override
-                    public void onSwiped(RecyclerView.ViewHolder viewHolder,
-                                         int direction) {
-                        int position = viewHolder.getAdapterPosition();
-                        Note myNote = mAdapter.getNoteOnPosition(position);
-                        Toast.makeText(MainActivity.this, "Deleting " +
-                                myNote.getNote(), Toast.LENGTH_LONG).show();
-                        mNoteViewModel.deleteNote(myNote);
-                    }
-                });
-
-        helper.attachToRecyclerView(mRecyclerView);
-
+        mNoteViewModel = ViewModelProviders.of(this).get(NoteViewModel.class);
         mNoteViewModel.getAllNotes().observe(this, observer);
 
+        ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,
+                ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView,
+                                  RecyclerView.ViewHolder viewHolder,
+                                  RecyclerView.ViewHolder target) {
+                return false;
+            }
 
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder,
+                                 int direction) {
+                int position = viewHolder.getAdapterPosition();
+                Note myNote = mAdapter.getNoteOnPosition(position);
+                mNoteViewModel.deleteNote(myNote);
+            }
+        });
+        helper.attachToRecyclerView(mRecyclerView);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == Constants.NEW_NOTE_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK)
-        {
+        if (requestCode == Constants.NEW_NOTE_ACTIVITY_REQUEST_CODE ||
+                requestCode == Constants.UPDATED_NOTE_ACTIVITY_REQUEST_CODE &&
+                        resultCode == RESULT_OK) {
             Toast.makeText(
                     getApplicationContext(),
-                    data.getStringExtra(Constants.EXTRA_REPLY_NOTE) + " saved",
+                    R.string.note_save,
                     Toast.LENGTH_LONG).show();
-
-        }
-
-        else {
+        } else {
             Toast.makeText(
                     getApplicationContext(),
                     R.string.empty_not_saved,
@@ -141,16 +103,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-
-      @Override
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
-
-        // Associate searchable configuration with the SearchView
         SearchManager searchManager =
-                 (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+                (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         SearchView searchView =
                 (SearchView) menu.findItem(R.id.search).getActionView();
         searchView.setSearchableInfo(
@@ -158,17 +115,14 @@ public class MainActivity extends AppCompatActivity {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                Log.d(TAG, "onQueryTextSubmit "+query);
                 handleSearch(query);
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                Log.d(TAG, "onQueryTextChange "+newText);
                 if (TextUtils.isEmpty(newText))
                     handleSearch("");
-
                 return false;
             }
         });
@@ -180,27 +134,23 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.clear_data) {
-            // Add a toast just for confirmation
-            Toast.makeText(this, "Clearing the data...",
+            Toast.makeText(this, R.string.action_clear_data,
                     Toast.LENGTH_SHORT).show();
             mNoteViewModel.deleteAll();
             return true;
         }
 
-        if (id==R.id.ascending)
-        {
+        if (id == R.id.ascending) {
             mNoteViewModel.rearrange(Constants.ASCENDING);
-            mNoteViewModel.getAllNotes().observe(this,observer);
+            mNoteViewModel.getAllNotes().observe(this, observer);
             return true;
         }
 
-        if (id==R.id.descending)
-        {
+        if (id == R.id.descending) {
             mNoteViewModel.rearrange(Constants.DESCENDING);
-            mNoteViewModel.getAllNotes().observe(this,observer);
+            mNoteViewModel.getAllNotes().observe(this, observer);
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -212,11 +162,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleSearch(String query) {
-        String pattern =  "_";
+        String pattern = FULL_QUERY_TEXT;
         if (!TextUtils.isEmpty(query))
             pattern = query;
         mNoteViewModel.setFilter(pattern);
         mNoteViewModel.getAllNotes().observe(this, observer);
+        mAdapter.submitList(mNoteViewModel.getAllNotes().getValue()); // does not update adapter without it
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        handleSearch("");
+    }
 }
