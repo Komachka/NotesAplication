@@ -1,7 +1,7 @@
 # NotesAplication
-NotesAplication
+Application for manipulating and storing notes.
 
-## Authors
+## Author
 
 * **Storozh Kateryna** - [linkedin](https://www.linkedin.com/in/zhovta1kateryna/)
 
