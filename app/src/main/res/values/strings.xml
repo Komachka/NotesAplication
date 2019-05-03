@@ -13,4 +13,7 @@
     <string name="action_clear_data">Clearing the data...</string>
     <string name="note_save">Note has beed saved</string>
     <string name="del">Deleting</string>
+    <string name="share">Sharing</string>
+    <string name="empty_not_share">Can not share empty note</string>
+    <string name="send_to">Share to</string>
 </resources>

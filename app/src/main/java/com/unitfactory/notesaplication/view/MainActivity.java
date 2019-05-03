@@ -35,13 +35,6 @@ public class MainActivity extends AppCompatActivity {
     private NoteViewModel mNoteViewModel;
     private NoteListAdapterPaged mAdapter;
 
-    private Observer<PagedList<Note>> observer = new Observer<PagedList<Note>>() {
-        @Override
-        public void onChanged(PagedList<Note> notes) {
-            mAdapter.submitList(notes);
-        }
-    };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
                 int position = viewHolder.getAdapterPosition();
                 Note myNote = mAdapter.getNoteOnPosition(position);
                 mNoteViewModel.deleteNote(myNote);
-                mNoteViewModel.getAllNotes().observe(MainActivity.this, observer);
+                subscribe();
             }
         });
         helper.attachToRecyclerView(mRecyclerView);
@@ -97,10 +90,11 @@ public class MainActivity extends AppCompatActivity {
                     R.string.note_save,
                     Toast.LENGTH_LONG).show();
         } else {
-            Toast.makeText(
-                    getApplicationContext(),
-                    R.string.empty_not_saved,
-                    Toast.LENGTH_LONG).show();
+            if (requestCode == Constants.RESULT_DELETED) {
+                Toast.makeText(getApplicationContext(), R.string.empty_not_saved, Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getApplicationContext(), R.string.del, Toast.LENGTH_LONG).show();
+            }
         }
     }
 
@@ -168,7 +162,6 @@ public class MainActivity extends AppCompatActivity {
             pattern = query;
         mNoteViewModel.setFilter(pattern);
         subscribe();
-        //mAdapter.submitList(mNoteViewModel.getAllNotes().getValue()); // does not update adapter without it
     }
 
     @Override
@@ -177,8 +170,14 @@ public class MainActivity extends AppCompatActivity {
         handleSearch("");
     }
 
-    private void subscribe()
-    {
+    private Observer<PagedList<Note>> observer = new Observer<PagedList<Note>>() {
+        @Override
+        public void onChanged(PagedList<Note> notes) {
+            mAdapter.submitList(notes);
+        }
+    };
+
+    private void subscribe() {
         mNoteViewModel.getAllNotes().observe(this, observer);
     }
 }

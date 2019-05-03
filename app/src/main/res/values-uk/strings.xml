@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Нотатки</string>
+    <string name="action_settings">Налаштування</string>
+    <string name="action_asc">Від старих до нових</string>
+    <string name="action_desc">Від нових до старих</string>
+
+    <string name="hint_note">Текст нотатки</string>
+    <string name="button_save">Зберегти</string>
+    <string name="empty_not_saved">Неможливо зберегти порожню нотатку</string>
+    <string name="clear_all_data">Видалити все</string>
+    <string name="search_title">Пошук</string>
+    <string name="search_hint">пошук</string>
+    <string name="action_clear_data">Видалення данних</string>
+    <string name="note_save">Нотатка була збережена</string>
+    <string name="del">Видалення</string>
+    <string name="share">Поділитись</string>
+    <string name="empty_not_share">Неможливо поділитись пустою нотаткою</string>
+    <string name="send_to">Поділитись за допомогою</string>
+</resources>

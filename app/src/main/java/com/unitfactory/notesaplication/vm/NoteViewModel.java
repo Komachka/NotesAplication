@@ -15,15 +15,18 @@ import com.unitfactory.notesaplication.database.NoteRepository;
 import com.unitfactory.notesaplication.model.Note;
 
 import static com.unitfactory.notesaplication.utils.Constants.ASCENDING;
+import static com.unitfactory.notesaplication.utils.Constants.DESCENDING;
 import static com.unitfactory.notesaplication.utils.Constants.FULL_QUERY_TEXT;
 
 public class NoteViewModel extends AndroidViewModel {
 
+    private static final int PAGE_SIZE = 20;
+    private static final int INITIAL_LOAD_SIZE = 1;
     private NoteRepository mRepository;
     private LiveData<PagedList<Note>> concertList;
     private DataSource<Integer, Note> mostRecentDataSource;
     private String filter = FULL_QUERY_TEXT;
-    private int currentOrder = ASCENDING;
+    private int currentOrder = DESCENDING;
 
     public NoteViewModel(@NonNull Application application) {
         super(application);
@@ -40,8 +43,8 @@ public class NoteViewModel extends AndroidViewModel {
         NoteDataSourceFactory dataSourceFactory = mRepository.getNoteDataSourceFactory(filter, currentOrder);
         mostRecentDataSource = dataSourceFactory.create();
         PagedList.Config config = (new PagedList.Config.Builder()).setEnablePlaceholders(true)
-                .setInitialLoadSizeHint(1)
-                .setPageSize(2).build();
+                .setInitialLoadSizeHint(INITIAL_LOAD_SIZE)
+                .setPageSize(PAGE_SIZE).build();
         concertList = mRepository.createPageList(dataSourceFactory, config);
     }
 

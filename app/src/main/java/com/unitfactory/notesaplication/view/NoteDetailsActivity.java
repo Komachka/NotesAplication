@@ -3,7 +3,10 @@ package com.unitfactory.notesaplication.view;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
@@ -14,11 +17,16 @@ import com.unitfactory.notesaplication.R;
 import com.unitfactory.notesaplication.model.Note;
 import com.unitfactory.notesaplication.vm.NoteViewModel;
 
+import static com.unitfactory.notesaplication.utils.Constants.RESULT_DELETED;
 
-public class NoteDetailsActivity extends AppCompatActivity {
+
+public class NoteDetailsActivity extends AppCompatActivity implements View.OnClickListener {
+
     private EditText mEditWordView;
     private NoteViewModel mNoteViewModel;
     private Note currentNote = null;
+    private ImageButton delBut;
+    private ImageButton shareBut;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,13 +34,20 @@ public class NoteDetailsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_note_details);
         mNoteViewModel = ViewModelProviders.of(this).get(NoteViewModel.class);
         mEditWordView = findViewById(R.id.edit_word);
+        delBut = findViewById(R.id.delete_but);
+        delBut.setOnClickListener(this);
+        shareBut = findViewById(R.id.share_but);
+        shareBut.setOnClickListener(this);
         int noteId = getIntent().getIntExtra(Constants.NOTE_EXTRAS_KEY, -1);
         if (noteId != -1) {
             mNoteViewModel.getNoteById(noteId).observe(this, new Observer<Note>() {
                 @Override
                 public void onChanged(Note n) {
-                    currentNote = n;
-                    mEditWordView.setText(n.getNote());
+                    if (n != null)
+                    {
+                        currentNote = n;
+                        mEditWordView.setText(n.getNote());
+                    }
                 }
             });
         }
@@ -56,5 +71,30 @@ public class NoteDetailsActivity extends AppCompatActivity {
             setResult(RESULT_OK, replyIntent);
         }
         finish();
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.share_but)
+        {
+            if (TextUtils.isEmpty(mEditWordView.getText())) {
+                Toast.makeText(this, R.string.empty_not_share, Toast.LENGTH_LONG).show();
+                return;
+            }
+            Intent sendIntent = new Intent();
+            sendIntent.setAction(Intent.ACTION_SEND);
+            sendIntent.putExtra(Intent.EXTRA_TEXT, mEditWordView.getText() + "\nSending from " + getApplicationContext().getResources().getString(R.string.app_name));
+            sendIntent.setType("text/plain");
+            startActivity(Intent.createChooser(sendIntent, getResources().getText(R.string.send_to)));
+        }
+        if (v.getId() == R.id.delete_but)
+        {
+            if (currentNote != null) {
+                mNoteViewModel.deleteNote(currentNote);
+            }
+            Intent replyIntent = new Intent();
+            setResult(RESULT_DELETED, replyIntent);
+            finish();
+        }
     }
 }
