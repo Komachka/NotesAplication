@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
 
         mNoteViewModel = ViewModelProviders.of(this).get(NoteViewModel.class);
-        mNoteViewModel.getAllNotes().observe(this, observer);
+        subscribe();
 
         ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,
                 ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
                 int position = viewHolder.getAdapterPosition();
                 Note myNote = mAdapter.getNoteOnPosition(position);
                 mNoteViewModel.deleteNote(myNote);
+                mNoteViewModel.getAllNotes().observe(MainActivity.this, observer);
             }
         });
         helper.attachToRecyclerView(mRecyclerView);
@@ -132,23 +133,23 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
         if (id == R.id.clear_data) {
             Toast.makeText(this, R.string.action_clear_data,
                     Toast.LENGTH_SHORT).show();
             mNoteViewModel.deleteAll();
+            subscribe();
             return true;
         }
 
         if (id == R.id.ascending) {
             mNoteViewModel.rearrange(Constants.ASCENDING);
-            mNoteViewModel.getAllNotes().observe(this, observer);
+            subscribe();
             return true;
         }
 
         if (id == R.id.descending) {
             mNoteViewModel.rearrange(Constants.DESCENDING);
-            mNoteViewModel.getAllNotes().observe(this, observer);
+            subscribe();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -166,13 +167,18 @@ public class MainActivity extends AppCompatActivity {
         if (!TextUtils.isEmpty(query))
             pattern = query;
         mNoteViewModel.setFilter(pattern);
-        mNoteViewModel.getAllNotes().observe(this, observer);
-        mAdapter.submitList(mNoteViewModel.getAllNotes().getValue()); // does not update adapter without it
+        subscribe();
+        //mAdapter.submitList(mNoteViewModel.getAllNotes().getValue()); // does not update adapter without it
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         handleSearch("");
+    }
+
+    private void subscribe()
+    {
+        mNoteViewModel.getAllNotes().observe(this, observer);
     }
 }

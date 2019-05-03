@@ -34,7 +34,7 @@ public class NoteDataSource extends PageKeyedDataSource<Integer, Note> {
         int startPosition = 0;
         List<Note> notes = loadRangeInternal(startPosition, params.requestedLoadSize);
         callback.onResult(notes, null,
-                notes.size() + 1);
+                notes.size());
     }
 
     @Override

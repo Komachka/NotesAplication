@@ -31,12 +31,12 @@ public class NoteViewModel extends AndroidViewModel {
         init();
     }
 
-    public void invalidateDataSource() {
+    private void invalidateDataSource() {
         if (mostRecentDataSource != null)
             mostRecentDataSource.invalidate();
     }
 
-    public void init() {
+    private void init() {
         NoteDataSourceFactory dataSourceFactory = mRepository.getNoteDataSourceFactory(filter, currentOrder);
         mostRecentDataSource = dataSourceFactory.create();
         PagedList.Config config = (new PagedList.Config.Builder()).setEnablePlaceholders(true)
@@ -60,9 +60,8 @@ public class NoteViewModel extends AndroidViewModel {
     }
 
     public void setFilter(String filter) {
-        invalidateDataSource();
         this.filter = filter;
-        init();
+        recreateDataSource();
     }
 
     public LiveData<PagedList<Note>> getAllNotes() {
@@ -70,9 +69,8 @@ public class NoteViewModel extends AndroidViewModel {
     }
 
     public void rearrange(int order) {
-        invalidateDataSource();
         currentOrder = order;
-        init();
+        recreateDataSource();
     }
 
 
@@ -82,12 +80,12 @@ public class NoteViewModel extends AndroidViewModel {
 
     public void deleteAll() {
         mRepository.deleteAll();
+        recreateDataSource();
     }
 
     public void deleteNote(Note note) {
-        invalidateDataSource();
         mRepository.deleteNote(note);
-        init();
+        recreateDataSource();
     }
 
     public void shutDown() {
@@ -96,6 +94,12 @@ public class NoteViewModel extends AndroidViewModel {
 
     public void updateNote(Note note) {
         mRepository.updateNote(note);
+    }
+
+    private void recreateDataSource()
+    {
+        invalidateDataSource();
+        init();
     }
 
 }
