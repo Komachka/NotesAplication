@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -85,10 +86,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == Constants.NEW_NOTE_ACTIVITY_REQUEST_CODE ||
                 requestCode == Constants.UPDATED_NOTE_ACTIVITY_REQUEST_CODE &&
                         resultCode == RESULT_OK) {
-            Toast.makeText(
-                    getApplicationContext(),
-                    R.string.note_save,
-                    Toast.LENGTH_LONG).show();
+            Log.d(TAG, getApplicationContext().getString(R.string.note_save));
         } else {
             if (requestCode == Constants.RESULT_DELETED) {
                 Toast.makeText(getApplicationContext(), R.string.empty_not_saved, Toast.LENGTH_LONG).show();
